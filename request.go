@@ -9,19 +9,26 @@ import (
 	"net/http/httptest"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-pg/pg/v10"
 )
 
 type (
 	requestResponse[T any, R any] struct {
 		u                string
 		responseRecorder *httptest.ResponseRecorder
-		engine           *gin.Engine
+		engine           httpServer
 		headers          map[string]string
+	}
+
+	db interface {
+		Rollback() error
+	}
+
+	httpServer interface {
+		ServeHTTP(http.ResponseWriter, *http.Request)
 	}
 )
 
-func RunIntegrationTest(tx *pg.Tx, f func()) {
+func RunIntegrationTest(tx db, f func()) {
 	defer func() {
 		err := tx.Rollback()
 		if err != nil {
