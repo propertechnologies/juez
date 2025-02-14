@@ -11,18 +11,18 @@ import (
 )
 
 type (
-	multipartRequest[T any, R any] struct {
+	multipartRequestResponse[T any, R any] struct {
 		baseRequestResponse
 		writer *multipart.Writer
 		buffer *bytes.Buffer
 	}
 )
 
-func NewMultiPartRequest[T any](e *gin.Engine) *multipartRequest[T, T] {
+func NewMultiPartRequestResponse[T any, R any](e *gin.Engine) *multipartRequestResponse[T, R] {
 	var buffer bytes.Buffer
 	writer := multipart.NewWriter(&buffer)
 
-	return &multipartRequest[T, T]{
+	return &multipartRequestResponse[T, R]{
 		baseRequestResponse: baseRequestResponse{
 			engine: e,
 		},
@@ -31,7 +31,7 @@ func NewMultiPartRequest[T any](e *gin.Engine) *multipartRequest[T, T] {
 	}
 }
 
-func (r *multipartRequest[T, R]) POST(b T) *multipartRequest[T, R] {
+func (r *multipartRequestResponse[T, R]) POST(b T) *multipartRequestResponse[T, R] {
 	req, err := http.NewRequest(http.MethodPost, r.url, r.buffer)
 	if err != nil {
 		panic(err)
@@ -57,7 +57,7 @@ func (r *multipartRequest[T, R]) POST(b T) *multipartRequest[T, R] {
 	return r
 }
 
-func (r *multipartRequest[T, R]) AddFormData(b T, name string, value string) *multipartRequest[T, R] {
+func (r *multipartRequestResponse[T, R]) AddFormData(b T, name string, value string) *multipartRequestResponse[T, R] {
 	if err := r.writer.WriteField(name, value); err != nil {
 		panic(err)
 	}
@@ -65,7 +65,7 @@ func (r *multipartRequest[T, R]) AddFormData(b T, name string, value string) *mu
 	return r
 }
 
-func (r *multipartRequest[T, R]) AddFile(fieldName string, fileName string, reader io.Reader) *multipartRequest[T, R] {
+func (r *multipartRequestResponse[T, R]) AddFile(fieldName string, fileName string, reader io.Reader) *multipartRequestResponse[T, R] {
 	fileWriter, err := r.writer.CreateFormFile(fieldName, fileName)
 	if err != nil {
 		panic(err)
@@ -78,24 +78,24 @@ func (r *multipartRequest[T, R]) AddFile(fieldName string, fileName string, read
 	return r
 }
 
-func (r *multipartRequest[T, R]) URL(u string) *multipartRequest[T, R] {
+func (r *multipartRequestResponse[T, R]) URL(u string) *multipartRequestResponse[T, R] {
 	r.url = u
 
 	return r
 }
 
-func (r *multipartRequest[T, R]) Body() R {
+func (r *multipartRequestResponse[T, R]) Body() R {
 	b := r.responseRecorder.Body.Bytes()
 	return BodyToReceive[R](b)
 }
 
-func (r *multipartRequest[T, R]) Expect(httpStatus int) *multipartRequest[T, R] {
+func (r *multipartRequestResponse[T, R]) Expect(httpStatus int) *multipartRequestResponse[T, R] {
 	r.baseRequestResponse.Expect(httpStatus)
 
 	return r
 }
 
-func (r *multipartRequest[T, R]) WithHeaders(headers map[string]string) *multipartRequest[T, R] {
+func (r *multipartRequestResponse[T, R]) WithHeaders(headers map[string]string) *multipartRequestResponse[T, R] {
 	r.baseRequestResponse.WithHeaders(headers)
 
 	return r
