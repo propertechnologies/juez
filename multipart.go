@@ -84,7 +84,7 @@ func (r *multipartRequest[T, R]) URL(u string) *multipartRequest[T, R] {
 	return r
 }
 
-func (r *multipartRequest[T, R]) Body(u string) R {
+func (r *multipartRequest[T, R]) Body() R {
 	b := r.responseRecorder.Body.Bytes()
 	return BodyToReceive[R](b)
 }
