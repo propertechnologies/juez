@@ -32,10 +32,6 @@ func NewMultiPartRequest[T any](e *gin.Engine) *multipartRequest[T, T] {
 }
 
 func (r *multipartRequest[T, R]) POST(b T) *multipartRequest[T, R] {
-	if err := r.writer.Close(); err != nil {
-		panic(err)
-	}
-
 	req, err := http.NewRequest(http.MethodPost, r.url, r.buffer)
 	if err != nil {
 		panic(err)
@@ -46,6 +42,10 @@ func (r *multipartRequest[T, R]) POST(b T) *multipartRequest[T, R] {
 	}
 
 	req.Header.Set("Content-Type", r.writer.FormDataContentType())
+
+	if err := r.writer.Close(); err != nil {
+		panic(err)
+	}
 
 	recorder := httptest.NewRecorder()
 	r.engine.ServeHTTP(recorder, req)
@@ -66,7 +66,7 @@ func (r *multipartRequest[T, R]) AddFormData(b T, name string, value string) *mu
 }
 
 func (r *multipartRequest[T, R]) AddFile(fieldName string, fileName string, reader io.Reader) *multipartRequest[T, R] {
-	fileWriter, err := r.writer.CreateFormFile(fieldName, fieldName)
+	fileWriter, err := r.writer.CreateFormFile(fieldName, fileName)
 	if err != nil {
 		panic(err)
 	}
@@ -82,6 +82,11 @@ func (r *multipartRequest[T, R]) URL(u string) *multipartRequest[T, R] {
 	r.url = u
 
 	return r
+}
+
+func (r *multipartRequest[T, R]) Body(u string) R {
+	b := r.responseRecorder.Body.Bytes()
+	return BodyToReceive[R](b)
 }
 
 func (r *multipartRequest[T, R]) Expect(httpStatus int) *multipartRequest[T, R] {

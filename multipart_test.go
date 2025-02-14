@@ -2,6 +2,7 @@ package juez_test
 
 import (
 	"io"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -39,10 +40,17 @@ func TestMultipartWithHeaders(t *testing.T) {
 			c.String(400, "file not found or error %s", err)
 			return
 		}
+
+		if !strings.HasSuffix(file.Filename, ".pdf") {
+			c.String(400, "file is not a pdf")
+			return
+		}
+
 		if file.Size == 0 {
 			c.String(400, "file is empty")
 			return
 		}
+
 		if c.GetHeader("Authorization") != "Bearer token" {
 			c.String(401, "token is missing")
 			return
@@ -57,7 +65,7 @@ func TestMultipartWithHeaders(t *testing.T) {
 
 	multipartRequest := juez.NewMultiPartRequest[any](e)
 	multipartRequest.URL("/upload").
-		AddFile("file", "file.txt", reader).
+		AddFile("file", "file.pdf", reader).
 		WithHeaders(map[string]string{"Authorization": "Bearer token"}).
 		POST(nil).
 		Expect(200)
