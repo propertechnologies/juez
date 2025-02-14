@@ -28,3 +28,8 @@ func (r *baseRequestResponse) Expect(httpStatus int) *baseRequestResponse {
 
 	return r
 }
+
+func (r *baseRequestResponse) WithHeaders(headers map[string]string) *baseRequestResponse {
+	r.headers = headers
+	return r
+}

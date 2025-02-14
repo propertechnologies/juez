@@ -41,6 +41,10 @@ func (r *multipartRequest[T, R]) POST(b T) *multipartRequest[T, R] {
 		panic(err)
 	}
 
+	for header, value := range r.headers {
+		req.Header.Set(header, value)
+	}
+
 	req.Header.Set("Content-Type", r.writer.FormDataContentType())
 
 	recorder := httptest.NewRecorder()
@@ -62,13 +66,11 @@ func (r *multipartRequest[T, R]) AddFormData(b T, name string, value string) *mu
 }
 
 func (r *multipartRequest[T, R]) AddFile(fieldName string, fileName string, reader io.Reader) *multipartRequest[T, R] {
-	// Add file
 	fileWriter, err := r.writer.CreateFormFile(fieldName, fieldName)
 	if err != nil {
 		panic(err)
 	}
 
-	// Copy the file content to the file writer
 	if _, err = io.Copy(fileWriter, reader); err != nil {
 		panic(err)
 	}
@@ -78,6 +80,18 @@ func (r *multipartRequest[T, R]) AddFile(fieldName string, fileName string, read
 
 func (r *multipartRequest[T, R]) URL(u string) *multipartRequest[T, R] {
 	r.url = u
+
+	return r
+}
+
+func (r *multipartRequest[T, R]) Expect(httpStatus int) *multipartRequest[T, R] {
+	r.baseRequestResponse.Expect(httpStatus)
+
+	return r
+}
+
+func (r *multipartRequest[T, R]) WithHeaders(headers map[string]string) *multipartRequest[T, R] {
+	r.baseRequestResponse.WithHeaders(headers)
 
 	return r
 }

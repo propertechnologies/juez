@@ -103,7 +103,8 @@ func (r *requestResponse[T, R]) GET() *requestResponse[T, R] {
 }
 
 func (r *requestResponse[T, R]) WithHeaders(headers map[string]string) *requestResponse[T, R] {
-	r.headers = headers
+	r.baseRequestResponse.WithHeaders(headers)
+
 	return r
 }
 
